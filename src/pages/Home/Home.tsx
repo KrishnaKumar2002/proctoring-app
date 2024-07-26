@@ -1,21 +1,21 @@
-import { Col, Row, Typography } from "antd";
-import React from "react";
+import { Alert, Col, Row } from "antd";
 import { WebcamHolder } from "../../components/Webcam";
-function Home() {
+import { useState } from "react";
+import { Face } from "tensorflow-models-face-landmarks-detection";
+export const Home = () => {
+	const [faces, setFaces] = useState<Face[]>([]);
+	const OnFaceDetect = (faces: Face[]) => {
+		setFaces(faces);
+	};
+
 	return (
-		<div>
-			<Row>
-				<Col span={24} style={{ textAlign: "center" }}>
-					<Typography.Title level={2}>PROCTORING APP</Typography.Title>
-				</Col>
-			</Row>
+		<>	{faces.length != 1 && <Alert message="No Face detected" type="error" showIcon closable/>}
 			<Row>
 				<Col span={24} style={{ display: "flex", justifyContent: "center" }}>
-					<WebcamHolder />
+					<WebcamHolder OnFaceDetect={OnFaceDetect} />
 				</Col>
 			</Row>
-		</div>
+		</>
 	);
 }
 
-export default Home;
