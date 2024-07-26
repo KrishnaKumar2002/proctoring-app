@@ -1,11 +1,16 @@
-import { useRef, useEffect } from 'react';
+import { Card } from 'antd';
+import React, { useRef, useEffect } from 'react';
 import Webcam from 'react-webcam';
 import { createDetector, Face, FaceLandmarksDetector, SupportedModels } from "tensorflow-models-face-landmarks-detection"
 
-export function WebcamHolder() {
+export interface WebcamProps {
+  OnFaceDetect: (faces: Face[]) => void;
+}
+
+export const WebcamHolder = (props: WebcamProps) => {
   const webcamRef = useRef<Webcam>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-
+   
   const detect = async (net: FaceLandmarksDetector) => {
     if (
       webcamRef.current &&
@@ -25,6 +30,7 @@ export function WebcamHolder() {
 
       const faces = await net.estimateFaces(video);
       console.log(faces);
+      props.OnFaceDetect(faces);
       
       if (canvasRef.current) {
         const ctx = canvasRef.current.getContext('2d');
@@ -36,36 +42,54 @@ export function WebcamHolder() {
   };
 
   const drawFaceLandmarks = (ctx: CanvasRenderingContext2D, faces: Face[]) => {
+    const keypointsToPlot = new Set(['leftEye', 'leftIris', 'rightEye', 'rightIris', 'faceOval' ,'lips']);
+    const colorMap = {
+      leftEye: 'blue',
+      leftIris: 'lightblue',
+      rightEye: 'green',
+      rightIris: 'lightgreen',
+      lips: 'skyblue',
+      faceOval: 'skyblue',
+    };
+  
     faces.forEach(face => {
-      const keypoints = face.keypoints;
-      ctx.fillStyle = 'aqua';
-      for (let i = 0; i < keypoints.length; i++) {
-        const x = keypoints[i].x;
-        const y = keypoints[i].y;
-        ctx.beginPath();
-        ctx.arc(x, y, 3, 0, 2 * Math.PI);
-        ctx.fill();
-      }
+      face.keypoints.forEach(({ x, y, name }) => {
+        if (keypointsToPlot.has(name?? "")) {
+          ctx.fillStyle = colorMap[name as keyof typeof colorMap];
+          ctx.beginPath();
+          ctx.arc(x, y, 3, 0, 2 * Math.PI);
+          ctx.fill();
+        }
+      });
     });
   };
+  
 
   const runFaceMesh = async () => {
-    const model = SupportedModels.MediaPipeFaceMesh;
-    const detectorConfig = {
-      runtime: 'mediapipe' as const,
-      solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh',
-      refineLandmarks: true,
-      maxFaces: 1,
-    };
-    return await createDetector(model, detectorConfig);
+    try {
+      const model = SupportedModels.MediaPipeFaceMesh;
+      const detectorConfig = {
+        runtime: 'mediapipe' as const,
+        solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh',
+        refineLandmarks: true,
+        maxFaces: 3,
+      };
+      const detector = await createDetector(model, detectorConfig);
+      return detector;
+    } catch (error) {
+      console.error('Error initializing face mesh:', error);
+      return null;
+    }
   };
 
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
     runFaceMesh().then(detector => {
-      intervalId = setInterval(() => {
-        detect(detector);
-      }, 0);
+      if (detector) {
+        intervalId = setInterval(() => {
+          detect(detector);
+        }, 100);
+      }
     });
 
     return () => {
@@ -74,35 +98,48 @@ export function WebcamHolder() {
   }, []);
 
   return (
-    <>
-        <Webcam
-          ref={webcamRef}
-          style={{
-            position: "absolute",
-            marginLeft: "auto",
-            marginRight: "auto",
-            left: 0,
-            right: 0,
-            textAlign: "center",
-            zIndex: 9,
-            width: 640,
-            height: 480,
-          }}
-        />
-        <canvas
-          ref={canvasRef}
-          style={{
-            position: "absolute",
-            marginLeft: "auto",
-            marginRight: "auto",
-            left: 0,
-            right: 0,
-            textAlign: "center",
-            zIndex: 9,
-            width: 640,
-            height: 480,
-          }}
-        />
-        </>
+    <Card 
+    title="Live Camera Feed"
+    style={{
+      position: "absolute",
+      marginLeft: "auto",
+      marginRight: "auto",
+      left: 0,
+      right: 0,
+      textAlign: "center",
+      zIndex: 9,
+      width: 640,
+      height: 480,
+    }}
+    >
+      <Webcam
+        ref={webcamRef}
+        style={{
+          position: "absolute",
+          marginLeft: "auto",
+          marginRight: "auto",
+          left: 0,
+          right: 0,
+          textAlign: "center",
+          zIndex: 9,
+          width: 640,
+          height: 480,
+        }}
+      />
+      <canvas
+        ref={canvasRef}
+        style={{
+          position: "absolute",
+          marginLeft: "auto",
+          marginRight: "auto",
+          left: 0,
+          right: 0,
+          textAlign: "center",
+          zIndex: 9,
+          width: 640,
+          height: 480,
+        }}
+      />
+    </Card>
   );
 }

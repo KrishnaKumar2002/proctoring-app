@@ -1,9 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import './App.css';
-
 import styled from 'styled-components';
-import Home from '../pages/Home/Home';
+import { Home } from '../pages/Home';
 
 const AppContainer = styled.div`
 	background-color: ${({ theme }) => theme.colors.light};
@@ -18,7 +17,7 @@ function App() {
       <Router>
         <Routes>
           <Route path="/proctoring-app/" element={<Home />} />
-          <Route path="/proctoring-app/dashboard" element={<div />} />
+          <Route path="/proctoring-app/dashboard" element={<></>} />
         </Routes>
       </Router>
     </AppContainer>
