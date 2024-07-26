@@ -1,5 +1,5 @@
 import { Card } from 'antd';
-import React, { useRef, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import Webcam from 'react-webcam';
 import { createDetector, Face, FaceLandmarksDetector, SupportedModels } from "tensorflow-models-face-landmarks-detection"
 
