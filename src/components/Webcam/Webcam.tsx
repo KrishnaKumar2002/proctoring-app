@@ -1,104 +1,35 @@
-import { Card } from 'antd';
-import { useRef, useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import Webcam from 'react-webcam';
-import { createDetector, Face, FaceLandmarksDetector, SupportedModels } from "tensorflow-models-face-landmarks-detection"
+import { setupFaceDetection, setupObjectDetection } from './utils';
+import { Card } from 'antd';
+import { Face } from 'tensorflow-models-face-landmarks-detection';
+import { DetectedObject } from "@tensorflow-models/coco-ssd"
+import "@tensorflow/tfjs"
 
 export interface WebcamProps {
   OnFaceDetect: (faces: Face[]) => void;
+  OnObjectDetect: (objects: DetectedObject[]) => void;
 }
 
 export const WebcamHolder = (props: WebcamProps) => {
   const webcamRef = useRef<Webcam>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-   
-  const detect = async (net: FaceLandmarksDetector) => {
-    if (
-      webcamRef.current &&
-      webcamRef.current.video?.readyState === 4
-    ) {
-      const video = webcamRef.current.video;
-      const videoWidth = video.videoWidth;
-      const videoHeight = video.videoHeight;
-
-      video.width = videoWidth;
-      video.height = videoHeight;
-
-      if (canvasRef.current) {
-        canvasRef.current.width = videoWidth;
-        canvasRef.current.height = videoHeight;
-      }
-
-      const faces = await net.estimateFaces(video);
-      console.log(faces);
-      props.OnFaceDetect(faces);
-      
-      if (canvasRef.current) {
-        const ctx = canvasRef.current.getContext('2d');
-        if (ctx) {
-          drawFaceLandmarks(ctx, faces);
-        }
-      }
-    }
-  };
-
-  const drawFaceLandmarks = (ctx: CanvasRenderingContext2D, faces: Face[]) => {
-    const keypointsToPlot = new Set(['leftEye', 'leftIris', 'rightEye', 'rightIris', 'faceOval' ,'lips']);
-    const colorMap = {
-      leftEye: 'blue',
-      leftIris: 'lightblue',
-      rightEye: 'green',
-      rightIris: 'lightgreen',
-      lips: 'skyblue',
-      faceOval: 'skyblue',
-    };
+  const canvasRef = useRef<HTMLCanvasElement>(null); 
   
-    faces.forEach(face => {
-      face.keypoints.forEach(({ x, y, name }) => {
-        if (keypointsToPlot.has(name?? "")) {
-          ctx.fillStyle = colorMap[name as keyof typeof colorMap];
-          ctx.beginPath();
-          ctx.arc(x, y, 3, 0, 2 * Math.PI);
-          ctx.fill();
-        }
-      });
-    });
-  };
-  
-
-  const runFaceMesh = async () => {
-    try {
-      const model = SupportedModels.MediaPipeFaceMesh;
-      const detectorConfig = {
-        runtime: 'mediapipe' as const,
-        solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh',
-        refineLandmarks: true,
-        maxFaces: 3,
-      };
-      const detector = await createDetector(model, detectorConfig);
-      return detector;
-    } catch (error) {
-      console.error('Error initializing face mesh:', error);
-      return null;
-    }
-  };
-
+  // Face Mesh Model initialization is sensitive to re-renders.  
+  // We use an empty dependency array to ensure this effect runs only once on mount.
   useEffect(() => {
-    let intervalId: NodeJS.Timeout;
-    runFaceMesh().then(detector => {
-      if (detector) {
-        intervalId = setInterval(() => {
-          detect(detector);
-        }, 100);
-      }
-    });
-
+    const cleanupFaceDetection = setupFaceDetection(webcamRef, canvasRef, props.OnFaceDetect);
+    const cleanupObjectDetection = setupObjectDetection(webcamRef, canvasRef, props.OnObjectDetect);
+    
     return () => {
-      if (intervalId) clearInterval(intervalId);
+      cleanupFaceDetection();
+      cleanupObjectDetection();
     };
   }, []);
 
+
   return (
-    <Card 
+    <Card
     title="Live Camera Feed"
     style={{
       position: "absolute",
