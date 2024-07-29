@@ -71,9 +71,9 @@ const App: React.FC = () => {
               }}
             >
               <Routes>
-                <Route path="/proctoring-app/" element={<></>} />
+                <Route path="/proctoring-app/" element={<LiveViewLayout />} />
                 <Route path="/proctoring-app/result" element={<></>} />
-                <Route path="/proctoring-app/live" element={<LiveViewLayout />} />
+                <Route path="/proctoring-app/live" element={<></>} />
               </Routes>
             </div>
           </Content>
