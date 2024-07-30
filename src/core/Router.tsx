@@ -6,9 +6,9 @@ import { BarChartOutlined, FileTextOutlined, VideoCameraOutlined } from '@ant-de
 const { Header, Content, Footer } = Layout;
 
 const navbarItems = [
-  { key: 'Test', icon: <FileTextOutlined />, label: 'Test' },
-  { key: 'Results', icon: <BarChartOutlined />, label: 'Results' },
-  { key: 'Live', icon: <VideoCameraOutlined />, label: 'Live' },
+  { key: 'test', icon: <FileTextOutlined />, label: 'Test' },
+  { key: 'results', icon: <BarChartOutlined />, label: 'Results' },
+  { key: 'live', icon: <VideoCameraOutlined />, label: 'Live' },
 ];
 
 const RootRouter = () => (
@@ -32,7 +32,7 @@ export const LayoutWrapper = () => {
           defaultSelectedKeys={['Live']}
           items={navbarItems}
           style={{ flex: 1, minWidth: 0 }}
-          onClick={({ key }) => navigate(`/proctoring-app/${key.toLowerCase()}`)}
+          onClick={({ key }) => navigate(`/proctoring-app/${key}`)}
         />
       </Header>
       <Content style={{ padding: '0 48px', flex: 1, display: 'flex', flexDirection: 'column' }}>
@@ -50,7 +50,7 @@ export const LayoutWrapper = () => {
         </div>
       </Content>
       <Footer style={{ textAlign: 'center' }}>
-        Proof Of Concept - Proctoring App - Minimal {new Date().getFullYear()}
+        Proctoring App - Minimal {new Date().getFullYear()}
       </Footer>
     </Layout>
   );
