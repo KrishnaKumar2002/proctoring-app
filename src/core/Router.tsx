@@ -2,6 +2,7 @@ import { Routes, Route, useNavigate } from 'react-router-dom';
 import { LiveViewLayout } from '../pages/Home';
 import { Layout, Menu } from 'antd';
 import { BarChartOutlined, FileTextOutlined, VideoCameraOutlined } from '@ant-design/icons';
+import { Assessment } from '../pages/Assessment';
 
 const { Header, Content, Footer } = Layout;
 
@@ -14,7 +15,7 @@ const navbarItems = [
 const RootRouter = () => (
   <Routes>
     <Route index path="/proctoring-app/*" element={<LiveViewLayout />} />
-    <Route path="/proctoring-app/test" element={<></>} />
+    <Route path="/proctoring-app/test" element={<Assessment />} />
     <Route path="/proctoring-app/results" element={<></>} />
   </Routes>
 );
@@ -39,11 +40,8 @@ export const LayoutWrapper = () => {
         <div
           style={{
             background: '#fff',
-            flex: 1,
             padding: 24,
             borderRadius: 8,
-            overflowX: 'hidden',
-            overflowY: 'auto',
           }}
         >
           <RootRouter />
