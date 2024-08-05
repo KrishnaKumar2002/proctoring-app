@@ -1,43 +1,45 @@
-import { Alert, Col, Row } from 'antd';
+import { Card, Col, Row, Tooltip } from 'antd';
 import { WebcamHolder } from '../../components/Webcam';
-import { useState } from 'react';
-import { Face } from 'tensorflow-models-face-landmarks-detection';
-import { DetectedObject } from '@tensorflow-models/coco-ssd';
-
-// Starting Tensorflow Backend For coco-ssd. Do not Remove these Imports
-import '@tensorflow/tfjs-backend-cpu';
-import '@tensorflow/tfjs-backend-webgl';
+import { InboxOutlined, UsergroupAddOutlined, UserOutlined } from '@ant-design/icons';
+import { useProctoring } from '../../components/Proctering/Proctering';
 
 export const LiveViewLayout = () => {
-  const [faces, setFaces] = useState<Face[]>([]);
-  const [objects, setObjects] = useState<DetectedObject[]>([]);
-
-  const OnFaceDetect = (faces: Face[]) => {
-    setFaces(faces);
-  };
-
-  const OnObjectDetect = (objects: DetectedObject[]) => {
-    objects = objects.filter((object) => object.class !== 'person');
-    setObjects(objects);
-  };
-
+  const { faces, objects, webcamRef, canvasRef } = useProctoring();
   return (
     <>
-      {faces.length < 0 ? (
-        <Alert message="No Face Detected!" type="error" showIcon />
-      ) : faces.length > 1 ? (
-        <Alert message="Many Face Detected!" type="error" showIcon />
-      ) : (
-        <Alert message="Face Detected" type="success" showIcon />
-      )}
-      {objects.length < 1 ? (
-        <Alert message="No Object Detected!" type="success" showIcon />
-      ) : (
-        <Alert message="Object Detected" type="error" showIcon />
-      )}
       <Row>
         <Col span={24} style={{ display: 'flex', justifyContent: 'center' }}>
-          <WebcamHolder OnFaceDetect={OnFaceDetect} OnObjectDetect={OnObjectDetect} />
+          <WebcamHolder webcamRef={webcamRef} canvasRef={canvasRef} />
+        </Col>
+      </Row>
+
+      <Row justify="center" style={{ marginTop: 16 }}>
+        <Col>
+          <Card style={{ width: 200, textAlign: 'center' }}>
+            <Tooltip
+              title={
+                faces.length === 0
+                  ? 'No face detected'
+                  : faces.length === 1
+                    ? 'One face detected'
+                    : 'Multiple faces detected'
+              }
+            >
+              {faces.length === 0 && <UserOutlined style={{ fontSize: 24, color: 'red' }} />}
+              {faces.length === 1 && <UserOutlined style={{ fontSize: 24, color: 'green' }} />}
+              {faces.length > 1 && <UsergroupAddOutlined style={{ fontSize: 24, color: 'red' }} />}
+            </Tooltip>
+            <p style={{ marginTop: 8 }}>FACES: {faces.length}</p>
+          </Card>
+        </Col>
+        <Col offset={2}>
+          <Card style={{ width: 200, textAlign: 'center' }}>
+            <Tooltip title={objects.length === 0 ? 'No objects detected' : 'Objects detected'}>
+              {objects.length === 0 && <InboxOutlined style={{ fontSize: 24, color: 'green' }} />}
+              {objects.length > 0 && <InboxOutlined style={{ fontSize: 24, color: 'red' }} />}
+            </Tooltip>
+            <p style={{ marginTop: 8 }}>OBJECTS: {objects.length}</p>
+          </Card>
         </Col>
       </Row>
     </>

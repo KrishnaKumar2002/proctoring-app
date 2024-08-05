@@ -2,6 +2,11 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import { theme } from 'antd';
 import styled from 'styled-components';
 import { LayoutWrapper } from './Router';
+import { ProctoringProvider, ProctoringWrapper } from '../components/Proctering/Proctering';
+
+// Starting Tensorflow Backend For coco-ssd. Do not Remove these Imports
+import '@tensorflow/tfjs-backend-cpu';
+import '@tensorflow/tfjs-backend-webgl';
 
 const AppContainer = styled.div`
   background-color: ${({ theme }) => theme.colors.light};
@@ -15,11 +20,15 @@ const App = () => {
   } = theme.useToken();
 
   return (
-    <AppContainer>
-      <Router>
-        <LayoutWrapper />
-      </Router>
-    </AppContainer>
+    <ProctoringProvider>
+      <AppContainer>
+        <ProctoringWrapper>
+          <Router>
+            <LayoutWrapper />
+          </Router>
+        </ProctoringWrapper>
+      </AppContainer>
+    </ProctoringProvider>
   );
 };
 
